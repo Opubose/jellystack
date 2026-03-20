@@ -20,15 +20,27 @@ services:
     image: docker.io/jellyfin/jellyfin:latest
     container_name: jellyfin-container
     restart: always
+    depends_on:
+      - tailscale
     network_mode: "service:tailscale"
+    userns_mode: "keep-id"
+    user: "1000:1000"
     environment:
       - JELLYFIN_PublishedServerUrl=http://${JELLYFIN_IP}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
     devices:
       - nvidia.com/gpu=all
     volumes:
       - ${CONFIG_PATH}:/config:Z
       - ${CACHE_PATH}:/cache:Z
       - ${MEDIA_PATH}:/media:ro,Z
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
+      - /run
+      - /var/lib/jellyfin
 
 volumes:
   tailscale-data:
